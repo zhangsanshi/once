@@ -1,6 +1,8 @@
 # Once
 在注册的方法未执行完成前,不会再次执行该方法,在多次点击的时候特别有用
 
+[![Build Status](https://travis-ci.org/zhangsanshi/once.svg?branch=master)](https://travis-ci.org/zhangsanshi/once)
+[![Coverage Status](https://coveralls.io/repos/github/zhangsanshi/once/badge.svg?branch=master)](https://coveralls.io/github/zhangsanshi/once?branch=master)
 ## 例子
 
 1. 多次使用
