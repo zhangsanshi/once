@@ -3,7 +3,7 @@
 
 ## 例子
 
-1. 多次使用
+多次使用
 ```javascript
     var ajax1 = One('ajax1', function () {
         // do something
@@ -22,7 +22,7 @@
     });
 ```
 
-2. 使用一次
+使用一次
 ```javascript
     xx.on('click', function() {
         var ajax1 = One.one('ajax1', function () {
@@ -40,7 +40,7 @@
     });
 ```
 
-3. 删除注册的方法
+删除注册的方法
 ```javascript
     var ajax1 = One('ajax1', function () {
         // do something
