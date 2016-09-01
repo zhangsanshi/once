@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var Once = require('../lib/index.js');
+var Once = require('../lib/once.js');
 var State = require('../lib/state.js');
 describe('Once', function() {
     describe('Once(name)', function () {
