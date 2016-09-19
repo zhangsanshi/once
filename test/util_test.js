@@ -69,5 +69,17 @@ describe('Util', function() {
             var a = {};
             assert.equal(undefined, Util.isPromise(a));
         });
+        it('should return undefined when the value undefined', function() {
+            var a;
+            assert.equal(undefined, Util.isPromise());
+        });
+        it('should return undefined when the value 1', function() {
+            var a = 1;
+            assert.equal(undefined, Util.isPromise(a));
+        });
+        it('should return false when the value 0', function() {
+            var a = 0;
+            assert.equal(false, Util.isPromise(a));
+        });
     });
 });

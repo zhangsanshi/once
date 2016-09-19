@@ -1,0 +1,72 @@
+<button id="xx">Once.one</button>
+<button id="yy">Once</button>
+
+<script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+<script src="../dist/once.js"></script>
+<script>
+    $('#xx').on('click', function() {
+        var ajax1 = Once.one('ajax1', function () {
+            // do something
+            setTimeout(function () {
+                ajax1.done();
+            }, 1000 * 3);
+        }, {
+            afterDoing: function () {
+                console.log('afterDoing');
+            },
+            afterDone: function () {
+                console.log('afterDone');
+            }
+        });
+        ajax1.run();
+    });
+</script>
+<script>
+    var ajax2 = Once('ajax2', function () {
+        // do something
+        ajax2.done();
+    }, {
+        afterDoing: function () {
+            console.log('afterDoing');
+        },
+        afterDone: function () {
+            console.log('afterDone');
+        }
+    });
+    ajax2.run();
+    ajax2.run();
+    Once.remove('ajax2');
+    ajax2.run(); //not run
+</script>
+<script>
+    var ajax3 = Once('ajax3', function () {
+        // do something
+        setTimeout(function () {
+            ajax3.done();
+        }, 3 * 1000);
+    }, {
+        afterDoing: function () {
+            console.log('afterDoing');
+        },
+        afterDone: function () {
+            console.log('afterDone');
+        }
+    });
+    $('#yy').on('click', function() {
+        Once('ajax3').run();
+        // same as `ajax3.run();`
+    });
+</script>
+<script>
+    function Person() {
+
+    }
+    var p = Once.one('person', function () {
+        p.done();
+        return new Person();
+    });
+    var p1 = p.run();
+    var p2 = p.run();
+    var p3 = p.run();
+    console.log(p1 === p2, p2 === p3, p1 instanceof Person);
+</script>

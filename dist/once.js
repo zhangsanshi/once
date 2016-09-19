@@ -57,38 +57,46 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	var ns = __webpack_require__(1);
-	var State = __webpack_require__(3);
+	var state = __webpack_require__(3);
 	var Util = __webpack_require__(2);
 	
-	function Once(name, machine, options) {
-	  var module = ns[name];
+	function once(name, machine, options) {
+	  var stateInst = ns[name];
 	  options = options || {};
-	  if (!module) {
+	  if (!stateInst) {
 	    if (Util.isFunction(machine)) {
-	      module = ns[name] = new State(machine, options);
+	      stateInst = ns[name] = state(machine, options);
 	    }
-	  } else if (options.force && Util.isFunction(machine)) {
-	    module.machine = machine;
 	  }
-	  return module;
+	  return stateInst;
 	}
 	
-	Once.one = function one(name) {
-	  var module = Once.apply(Once, arguments);
-	  if (module && !module.one) {
-	    module.$afterDone = function $afterDone() {
-	      Once.remove(name);
+	once.one = function one(name, machine, options) {
+	  var $afterDone;
+	  var self = this;
+	  if (arguments.length > 1) {
+	    options = options || {};
+	    $afterDone = options.afterDone;
+	    options.one = true;
+	    options.afterDone = function afterDone() {
+	      if ($afterDone && Util.isFunction($afterDone)) {
+	        $afterDone();
+	      }
+	      self.remove(name);
 	    };
-	    module.one = true;
 	  }
-	  return module;
+	  return once(name, machine, options);
 	};
 	
-	Once.remove = function remove(name) {
-	  delete ns[name];
+	once.remove = function remove(name) {
+	  var stateInst = ns[name];
+	  if (stateInst) {
+	    stateInst.destory();
+	    delete ns[name];
+	  }
 	};
 	
-	module.exports = Once;
+	module.exports = once;
 
 /***/ },
 /* 1 */
@@ -124,72 +132,87 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	var Util = __webpack_require__(2);
-	var stateLabel = {
-	  pending: true,
-	  doing: true,
-	  done: true
-	};
+	module.exports = function State(machine, options) {
+	  var afterDoing;
+	  var afterDone;
+	  var one;
+	  var memory;
+	  var state = {
+	    status: 'pending',
+	    updateStatus: function updateStatus(status) {
+	      this.status = status;
+	      return this;
+	    },
+	    isDoing: function isDoing() {
+	      return this.status === 'doing';
+	    },
+	    isDestory: function isDestory() {
+	      return this.status === 'destory';
+	    },
+	    destory: function destory() {
+	      this.updateStatus('destory');
+	      this.machine = null;
+	    }
+	  };
 	
-	function State(machine, options) {
 	  options = options || {};
-	  this.state = 'pending';
-	  this.machine = machine;
-	  this.doneTimes = 0;
-	  this.afterDoing = options.afterDoing;
-	  this.afterDone = options.afterDone;
-	}
-	
-	State.prototype = {
-	  getState: function getState() {
-	    return this.state;
-	  },
-	  updateState: function updateState(state) {
-	    if (stateLabel[state]) {
-	      this.state = state;
+	  afterDoing = options.afterDoing;
+	  afterDone = options.afterDone;
+	  one = options.one;
+	  state.machine = machine;
+	  return {
+	    run: function run() {
+	      var machineResult;
+	      var self = this;
+	      function onDone() {
+	        self.done();
+	      }
+	      if (state.isDestory()) {
+	        return memory;
+	      }
+	      if (!state.isDoing()) {
+	        state.updateStatus('doing');
+	        try {
+	          machineResult = state.machine();
+	        } catch (e) {
+	          state.updateStatus('pending');
+	          throw new Error(e);
+	        }
+	        if (Util.isFunction(afterDoing)) {
+	          afterDoing();
+	        }
+	        if (Util.isPromise(machineResult)) {
+	          machineResult = machineResult.then(onDone, onDone);
+	        }
+	      }
+	      if (one) {
+	        memory = machineResult;
+	      }
+	      return machineResult;
+	    },
+	    getStatus: function getStatus() {
+	      return state.status;
+	    },
+	    done: function done() {
+	      if (state.isDestory() && !state.isDoing()) {
+	        return null;
+	      }
+	      if (state.isDoing()) {
+	        state.updateStatus('done');
+	        if (Util.isFunction(afterDone)) {
+	          afterDone();
+	        }
+	      }
+	      if (one) {
+	        this.destory();
+	      }
+	      return this;
+	    },
+	    destory: function destory() {
+	      state.destory();
 	    }
-	    return this;
-	  },
-	  isDoing: function isDoing() {
-	    return this.state === 'doing';
-	  },
-	  run: function run() {
-	    var machine = null;
-	    var slef = this;
-	    function onDone() {
-	      slef.done();
-	    }
-	    if (!this.isDoing()) {
-	      this.updateState('doing');
-	      try {
-	        machine = this.machine();
-	      } catch (e) {
-	        this.updateState('pending');
-	        throw new Error(e);
-	      }
-	      if (Util.isFunction(this.afterDoing)) {
-	        this.afterDoing();
-	      }
-	      if (Util.isPromise(machine)) {
-	        machine = machine.then(onDone, onDone);
-	      }
-	    }
-	    return machine;
-	  },
-	  done: function done() {
-	    if (this.isDoing()) {
-	      if (Util.isFunction(this.afterDone)) {
-	        this.afterDone();
-	      }
-	      if (this.one && Util.isFunction(this.$afterDone)) {
-	        this.$afterDone();
-	      }
-	      this.updateState('done');
-	      this.doneTimes++;
-	    }
-	    return this;
-	  }
+	  };
 	};
-	module.exports = State;
 
 /***/ }
 /******/ ])

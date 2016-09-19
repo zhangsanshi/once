@@ -26,6 +26,7 @@
     "eslint-plugin-import": "^1.8.0",
     "function-bind": "^1.0.2",
     "istanbul": "^0.4.5",
+
     "mocha": "^3.0.2",
     "open": "0.0.5",
     "unminified-webpack-plugin": "^1.0.0",
