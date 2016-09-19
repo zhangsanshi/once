@@ -73,9 +73,9 @@
         p.done();
         return new Person();
     }
-    var p1 = p1.run();
-    var p2 = p2.run();
-    var p3 = p3.run();
+    var p1 = p.run();
+    var p2 = p.run();
+    var p3 = p.run();
     console.log(p1 === p2, p2 === p3);
 ```
 

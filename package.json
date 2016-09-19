@@ -1,6 +1,6 @@
 {
   "name": "once",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "call something more but do once",
   "main": "dist/once.js",
   "scripts": {
